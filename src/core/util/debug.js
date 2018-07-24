@@ -10,7 +10,7 @@ export let formatComponentName = (noop: any)
 
 if (process.env.NODE_ENV !== 'production') {
   const hasConsole = typeof console !== 'undefined'
-  const classifyRE = /(?:^|[-_])(\w)/g
+  const classifyRE = /(?:^|[-_])(\w)/g // 连字符改成小驼峰
   const classify = str => str
     .replace(classifyRE, c => c.toUpperCase())
     .replace(/[-_]/g, '')
