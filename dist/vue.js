@@ -12,8 +12,8 @@
 })(this, function() {
   'use strict';
 
-  function print (msg, style) {
-    console.log('%c' + msg, style || 'color: red;')
+  function print(msg, style) {
+    console.log('%c' + msg, style || 'color: red;');
   }
 
   // Arno ------ new test
@@ -1045,6 +1045,7 @@
       get: function reactiveGetter() {
         var value = getter ? getter.call(obj) : val;
         if (Dep.target) {
+          console.log('----- get ---', obj, key);
           dep.depend();
           if (childOb) {
             childOb.dep.depend();
@@ -3183,6 +3184,7 @@
     } finally {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
+      console.log('-------- watcher get');
       if (this.deep) {
         traverse(value);
       }
@@ -3591,6 +3593,7 @@
   function initWatch(vm, watch) {
     for (var key in watch) {
       var handler = watch[key];
+
       if (Array.isArray(handler)) {
         for (var i = 0; i < handler.length; i++) {
           createWatcher(vm, key, handler[i]);
@@ -8900,11 +8903,11 @@
   }
 
   function testShowTempStack(stack, html) {
-    console.log('%c临时stack:', 'color:red')
+    console.log('%c临时stack:', 'color:red');
     console.log(JSON.parse(JSON.stringify(decycle(stack))));
 
-    print('html: ')
-    console.log(html)
+    print('html: ');
+    console.log(html);
   }
 
   function parseHTML(html, options) {
@@ -8916,17 +8919,20 @@
     var last, lastTag;
     var count = 0;
 
-    print('--html:')
+    print('--html:');
     console.log(html);
 
     while (html) {
-      count ++;
+      count++;
       last = html;
       console.log('\n\n\n');
-      print('-----------第 ' + count + ' 次执行------------', 'color: red; font-size: 15px;')
-      
-      print('lastTag:')
-      console.log(lastTag)
+      print(
+        '-----------第 ' + count + ' 次执行------------',
+        'color: red; font-size: 15px;'
+      );
+
+      print('lastTag:');
+      console.log(lastTag);
       // Make sure we're not in a plaintext content element like script/style
       if (!lastTag || !isPlainTextElement(lastTag)) {
         var textEnd = html.indexOf('<');
@@ -8940,11 +8946,11 @@
                 options.comment(html.substring(4, commentEnd));
               }
 
-              print('匹配到注释:')
-              console.log(html.substring(4, commentEnd))
+              print('匹配到注释:');
+              console.log(html.substring(4, commentEnd));
 
               advance(commentEnd + 3);
-              testShowTempStack(stack, html)
+              testShowTempStack(stack, html);
               continue;
             }
           }
@@ -8956,7 +8962,7 @@
             if (conditionalEnd >= 0) {
               advance(conditionalEnd + 2);
 
-              testShowTempStack(stack, html)
+              testShowTempStack(stack, html);
               continue;
             }
           }
@@ -8966,7 +8972,7 @@
           if (doctypeMatch) {
             advance(doctypeMatch[0].length);
 
-            testShowTempStack(stack, html)
+            testShowTempStack(stack, html);
             continue;
           }
 
@@ -8975,28 +8981,28 @@
           if (endTagMatch) {
             var curIndex = index;
 
-            print('匹配到 TAG 末尾:')
-            console.log(endTagMatch)
+            print('匹配到 TAG 末尾:');
+            console.log(endTagMatch);
 
             advance(endTagMatch[0].length);
             parseEndTag(endTagMatch[1], curIndex, index);
 
-            testShowTempStack(stack, html)
+            testShowTempStack(stack, html);
             continue;
           }
 
           // Start tag:
           var startTagMatch = parseStartTag();
           if (startTagMatch) {
-            print('匹配到 TAG 开始:')
-            console.log(startTagMatch)
+            print('匹配到 TAG 开始:');
+            console.log(startTagMatch);
 
             handleStartTag(startTagMatch);
             if (shouldIgnoreFirstNewline(lastTag, html)) {
               advance(1);
             }
 
-            testShowTempStack(stack, html)
+            testShowTempStack(stack, html);
             continue;
           }
         }
@@ -9023,11 +9029,11 @@
           }
           text = html.substring(0, textEnd);
 
-          print('文本:')
-          console.log(text)
+          print('文本:');
+          console.log(text);
 
           advance(textEnd);
-        }       
+        }
 
         if (textEnd < 0) {
           text = html;
@@ -9066,7 +9072,7 @@
         parseEndTag(stackedTag, index - endTagLength, index);
       }
 
-      testShowTempStack(stack, html)
+      testShowTempStack(stack, html);
 
       if (html === last) {
         options.chars && options.chars(html);
@@ -9301,6 +9307,8 @@
       }
     }
 
+    const html = template;
+
     parseHTML(template, {
       warn: warn$2,
       expectHTML: options.expectHTML,
@@ -9429,10 +9437,10 @@
           postTransforms[i$1](element, options);
         }
 
-        print('currentParent(start): ')
-        console.log(JSON.parse(JSON.stringify(decycle(currentParent))))
+        print('currentParent(start): ');
+        console.log(JSON.parse(JSON.stringify(decycle(currentParent))));
 
-        print('AST(start): ')
+        print('AST(start): ');
         console.log(JSON.parse(JSON.stringify(decycle(stack))));
       },
 
@@ -9453,10 +9461,10 @@
         currentParent = stack[stack.length - 1];
         endPre(element);
 
-        print('currentParent(start): ')
-        console.log(JSON.parse(JSON.stringify(decycle(currentParent))))
+        print('currentParent(start): ');
+        console.log(JSON.parse(JSON.stringify(decycle(currentParent))));
 
-        print('AST(end): ')
+        print('AST(end): ');
         console.log(JSON.parse(JSON.stringify(decycle(stack))));
       },
 
@@ -9518,7 +9526,7 @@
           }
         }
 
-        print('AST(chars): ')
+        print('AST(chars): ');
         console.log(JSON.parse(JSON.stringify(decycle(stack))));
       },
       comment: function comment(text) {
@@ -9529,7 +9537,12 @@
         });
       }
     });
-    console.log('------ root: ', root);
+
+    print('\n\n\n----------------\n\n');
+    print('初始模板:');
+    console.log(html);
+    print('最终 AST:');
+    console.log(JSON.parse(JSON.stringify(decycle(root))));
     return root;
   }
 
@@ -11187,6 +11200,10 @@
     var ast = parse(template.trim(), options);
     optimize(ast, options);
     var code = generate(ast, options);
+
+    print('渲染函数:');
+    console.log(code);
+
     return {
       ast: ast,
       render: code.render,

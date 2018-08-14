@@ -45,3 +45,6 @@ var demo = new Vue({
     }
   }
 })
+
+
+console.log(demo)
