@@ -13,7 +13,7 @@ import { traverse } from './traverse'
 import { queueWatcher } from './scheduler'
 import Dep, { pushTarget, popTarget } from './dep'
 
-import type { SimpleSet } from '../util/index'
+import { SimpleSet } from '../util/index'
 
 let uid = 0
 

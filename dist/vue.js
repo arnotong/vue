@@ -12,6 +12,10 @@
 })(this, function() {
   'use strict';
 
+  function print (msg, style) {
+    console.log('%c' + msg, style || 'color: red;')
+  }
+
   // Arno ------ new test
   function decycle(data) {
     if (!data) {
@@ -2678,6 +2682,7 @@
 
   function lifecycleMixin(Vue) {
     Vue.prototype._update = function(vnode, hydrating) {
+      debugger;
       var vm = this;
       if (vm._isMounted) {
         callHook(vm, 'beforeUpdate');
@@ -2821,6 +2826,7 @@
       };
     } else {
       updateComponent = function() {
+        debugger;
         vm._update(vm._render(), hydrating);
       };
     }
@@ -8893,6 +8899,14 @@
     });
   }
 
+  function testShowTempStack(stack, html) {
+    console.log('%c临时stack:', 'color:red')
+    console.log(JSON.parse(JSON.stringify(decycle(stack))));
+
+    print('html: ')
+    console.log(html)
+  }
+
   function parseHTML(html, options) {
     var stack = [];
     var expectHTML = options.expectHTML;
@@ -8900,11 +8914,19 @@
     var canBeLeftOpenTag$$1 = options.canBeLeftOpenTag || no;
     var index = 0;
     var last, lastTag;
+    var count = 0;
+
+    print('--html:')
+    console.log(html);
+
     while (html) {
+      count ++;
       last = html;
       console.log('\n\n\n');
-      console.log('===== html:', html);
-      console.log('----- stack:', JSON.stringify(decycle(stack)));
+      print('-----------第 ' + count + ' 次执行------------', 'color: red; font-size: 15px;')
+      
+      print('lastTag:')
+      console.log(lastTag)
       // Make sure we're not in a plaintext content element like script/style
       if (!lastTag || !isPlainTextElement(lastTag)) {
         var textEnd = html.indexOf('<');
@@ -8917,7 +8939,12 @@
               if (options.shouldKeepComment) {
                 options.comment(html.substring(4, commentEnd));
               }
+
+              print('匹配到注释:')
+              console.log(html.substring(4, commentEnd))
+
               advance(commentEnd + 3);
+              testShowTempStack(stack, html)
               continue;
             }
           }
@@ -8928,6 +8955,8 @@
 
             if (conditionalEnd >= 0) {
               advance(conditionalEnd + 2);
+
+              testShowTempStack(stack, html)
               continue;
             }
           }
@@ -8936,26 +8965,38 @@
           var doctypeMatch = html.match(doctype);
           if (doctypeMatch) {
             advance(doctypeMatch[0].length);
+
+            testShowTempStack(stack, html)
             continue;
           }
 
           // End tag:
           var endTagMatch = html.match(endTag);
-          console.log('-------------- endTagMatch:', endTagMatch, index);
           if (endTagMatch) {
             var curIndex = index;
+
+            print('匹配到 TAG 末尾:')
+            console.log(endTagMatch)
+
             advance(endTagMatch[0].length);
             parseEndTag(endTagMatch[1], curIndex, index);
+
+            testShowTempStack(stack, html)
             continue;
           }
 
           // Start tag:
           var startTagMatch = parseStartTag();
           if (startTagMatch) {
+            print('匹配到 TAG 开始:')
+            console.log(startTagMatch)
+
             handleStartTag(startTagMatch);
             if (shouldIgnoreFirstNewline(lastTag, html)) {
               advance(1);
             }
+
+            testShowTempStack(stack, html)
             continue;
           }
         }
@@ -8965,6 +9006,7 @@
           next = void 0;
         if (textEnd >= 0) {
           rest = html.slice(textEnd);
+
           while (
             !endTag.test(rest) &&
             !startTagOpen.test(rest) &&
@@ -8980,8 +9022,12 @@
             rest = html.slice(textEnd);
           }
           text = html.substring(0, textEnd);
+
+          print('文本:')
+          console.log(text)
+
           advance(textEnd);
-        }
+        }       
 
         if (textEnd < 0) {
           text = html;
@@ -9019,6 +9065,8 @@
         html = rest$1;
         parseEndTag(stackedTag, index - endTagLength, index);
       }
+
+      testShowTempStack(stack, html)
 
       if (html === last) {
         options.chars && options.chars(html);
@@ -9381,8 +9429,11 @@
           postTransforms[i$1](element, options);
         }
 
-        console.log('===== root: ', JSON.stringify(decycle(root)));
-        console.log('===== start: ', JSON.stringify(decycle(stack)));
+        print('currentParent(start): ')
+        console.log(JSON.parse(JSON.stringify(decycle(currentParent))))
+
+        print('AST(start): ')
+        console.log(JSON.parse(JSON.stringify(decycle(stack))));
       },
 
       end: function end() {
@@ -9402,7 +9453,11 @@
         currentParent = stack[stack.length - 1];
         endPre(element);
 
-        console.log('===== end: ', JSON.stringify(decycle(stack)));
+        print('currentParent(start): ')
+        console.log(JSON.parse(JSON.stringify(decycle(currentParent))))
+
+        print('AST(end): ')
+        console.log(JSON.parse(JSON.stringify(decycle(stack))));
       },
 
       chars: function chars(text) {
@@ -9462,6 +9517,9 @@
             });
           }
         }
+
+        print('AST(chars): ')
+        console.log(JSON.parse(JSON.stringify(decycle(stack))));
       },
       comment: function comment(text) {
         currentParent.children.push({
@@ -9471,7 +9529,7 @@
         });
       }
     });
-    console.log('------ root: ', root)
+    console.log('------ root: ', root);
     return root;
   }
 
@@ -11004,6 +11062,7 @@
         return cache[key];
       }
 
+      debugger;
       // compile
       var compiled = compile(template, options);
 
@@ -11208,6 +11267,7 @@
           mark('compile');
         }
 
+        debugger;
         var ref = compileToFunctions(
           template,
           {
