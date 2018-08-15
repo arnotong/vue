@@ -1045,7 +1045,6 @@
       get: function reactiveGetter() {
         var value = getter ? getter.call(obj) : val;
         if (Dep.target) {
-          console.log('----- get ---', obj, key);
           dep.depend();
           if (childOb) {
             childOb.dep.depend();
@@ -2697,6 +2696,8 @@
       // based on the rendering backend used.
       if (!prevVnode) {
         // initial render
+        // Arno
+        print('\n\n\n第一次渲染');
         vm.$el = vm.__patch__(
           vm.$el,
           vnode,
@@ -2710,6 +2711,7 @@
         vm.$options._parentElm = vm.$options._refElm = null;
       } else {
         // updates
+        print('\n\n\n非第一次渲染');
         vm.$el = vm.__patch__(prevVnode, vnode);
       }
       activeInstance = prevActiveInstance;
@@ -3184,7 +3186,6 @@
     } finally {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
-      console.log('-------- watcher get');
       if (this.deep) {
         traverse(value);
       }
@@ -5528,6 +5529,7 @@
       );
     }
 
+    // Arno
     var creatingElmInVPre = 0;
     function createElm(vnode, insertedVnodeQueue, parentElm, refElm, nested) {
       vnode.isRootInsert = !nested; // for transition enter check
@@ -5538,7 +5540,12 @@
       var data = vnode.data;
       var children = vnode.children;
       var tag = vnode.tag;
+      print('\n\n\n----------- 创建元素:');
+      console.log('vnode: ', vnode);
       if (isDef(tag)) {
+        console.log('tag: ', tag);
+        console.log('children: ', children);
+
         {
           if (data && data.pre) {
             creatingElmInVPre++;
@@ -5554,10 +5561,26 @@
             );
           }
         }
+
         vnode.elm = vnode.ns
           ? nodeOps.createElementNS(vnode.ns, tag)
           : nodeOps.createElement(tag, vnode);
         setScope(vnode);
+
+        print('查找所有子节点**')
+        print('更新所有属性:')
+        console.log(`
+        ---- 更新  updateAttrs  ------
+        ---- 更新  updateClass  ------
+        ---- 更新  updateDOMListeners  ------
+        ---- 更新  updateDOMProps  ------
+        ---- 更新  updateStyle  ------
+        ---- 更新  _enter  ------
+        ---- 更新  create  ------
+        ---- 更新  updateDirectives  ------
+        `)
+        // console.log('插入到父元素中')
+        console.log('element:', vnode.elm);
 
         /* istanbul ignore if */
         {
@@ -5572,9 +5595,11 @@
           creatingElmInVPre--;
         }
       } else if (isTrue(vnode.isComment)) {
+        console.log('comment: ', vnode.text);
         vnode.elm = nodeOps.createComment(vnode.text);
         insert(parentElm, vnode.elm, refElm);
       } else {
+        console.log('text: ', vnode.text);
         vnode.elm = nodeOps.createTextNode(vnode.text);
         insert(parentElm, vnode.elm, refElm);
       }
@@ -5674,7 +5699,9 @@
     }
 
     function invokeCreateHooks(vnode, insertedVnodeQueue) {
+      // print('\n\n\n 更新元素属性' + '  tag: ' + vnode.tag)
       for (var i$1 = 0; i$1 < cbs.create.length; ++i$1) {
+        // console.log('---- 更新 ', cbs.create[i$1].name, ' ------')
         cbs.create[i$1](emptyNode, vnode);
       }
       i = vnode.data.hook; // Reuse variable
@@ -5833,6 +5860,7 @@
           oldEndVnode = oldCh[--oldEndIdx];
           newEndVnode = newCh[--newEndIdx];
         } else if (sameVnode(oldStartVnode, newEndVnode)) {
+          // print('移动元素: \n' + oldStartVnode.elm.innerHTML + '\n到\n' + oldEndVnode.elm.innerHTML + '\n后面')
           // Vnode moved right
           patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue);
           canMove &&
@@ -5844,6 +5872,7 @@
           oldStartVnode = oldCh[++oldStartIdx];
           newEndVnode = newCh[--newEndIdx];
         } else if (sameVnode(oldEndVnode, newStartVnode)) {
+          // print('移动元素: \n' + oldEndVnode.elm.innerHTML + '\n到\n' + oldStartVnode.elm.innerHTML + '\n后面')
           // Vnode moved left
           patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue);
           canMove &&
@@ -5858,6 +5887,12 @@
             ? oldKeyToIdx[newStartVnode.key]
             : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx);
           if (isUndef(idxInOld)) {
+            // print('根据')
+            // console.log(newStartVnode)
+            // print('的 key 在')
+            // console.log(oldCh)
+            // print('里 找不到, 新建它')
+
             // New element
             createElm(
               newStartVnode,
@@ -5875,6 +5910,10 @@
               );
             }
             if (sameVnode(vnodeToMove, newStartVnode)) {
+              // print('在oldVNode里，与这个')
+              // console.log(newStartVnode.key)
+              // print('相同的元素是:')
+
               patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue);
               oldCh[idxInOld] = undefined;
               canMove &&
@@ -5958,6 +5997,14 @@
         i(oldVnode, vnode);
       }
 
+      var testLog = (prev, tag, type, oldVal, newVal) => {
+        console.log('-----------\n')
+        print(prev + '  ' + tag + ' 元素的 '  + type)
+        console.log('old: ', oldVal)
+        console.log('new: ', newVal)
+        console.log('\n')
+      }
+
       var oldCh = oldVnode.children;
       var ch = vnode.children;
       if (isDef(data) && isPatchable(vnode)) {
@@ -5970,20 +6017,24 @@
       }
       if (isUndef(vnode.text)) {
         if (isDef(oldCh) && isDef(ch)) {
+          testLog('查找', vnode.tag, 'children', oldVnode.children, vnode.children)
           if (oldCh !== ch) {
             updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly);
           }
         } else if (isDef(ch)) {
+          testLog('新增', vnode.tag, 'children', oldVnode.children, vnode.children)
           if (isDef(oldVnode.text)) {
             nodeOps.setTextContent(elm, '');
           }
           addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue);
         } else if (isDef(oldCh)) {
+          testLog('删除', vnode.tag, 'children', oldVnode.children, vnode.children)
           removeVnodes(elm, oldCh, 0, oldCh.length - 1);
         } else if (isDef(oldVnode.text)) {
           nodeOps.setTextContent(elm, '');
         }
       } else if (oldVnode.text !== vnode.text) {
+        testLog('更新', vnode.tag, 'text', oldVnode.text, vnode.text)
         nodeOps.setTextContent(elm, vnode.text);
       }
       if (isDef(data)) {
@@ -6136,6 +6187,7 @@
       }
     }
 
+    // ----- Arno patch
     return function patch(
       oldVnode,
       vnode,
@@ -6154,6 +6206,16 @@
       var isInitialPatch = false;
       var insertedVnodeQueue = [];
 
+      print('准备开始：');
+      console.log({
+        oldVnode,
+        vnode,
+        hydrating,
+        removeOnly,
+        parentElm,
+        refElm
+      });
+
       if (isUndef(oldVnode)) {
         // empty mount (likely as component), create new root element
         isInitialPatch = true;
@@ -6162,6 +6224,7 @@
         var isRealElement = isDef(oldVnode.nodeType);
         if (!isRealElement && sameVnode(oldVnode, vnode)) {
           // patch existing root node
+          print('\n---- 部分更新 vnode ----\n')
           patchVnode(oldVnode, vnode, insertedVnodeQueue, removeOnly);
         } else {
           if (isRealElement) {
